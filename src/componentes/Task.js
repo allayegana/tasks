@@ -1,6 +1,7 @@
 import React from "react";
-import { Text, View, StyleSheet, TouchableWithoutFeedback } from "react-native";
-import Icon from "react-native-vector-icons/MaterialIcons";
+import { Text, View, StyleSheet,TouchableOpacity, TouchableWithoutFeedback } from "react-native";
+import  Swipeable   from "react-native-gesture-handler/Swipeable";
+import Icon from "react-native-vector-icons/FontAwesome";
 
 import moment from "moment";
 import 'moment/locale/pt-br'
@@ -14,8 +15,18 @@ export default props => {
         const date = props.doneAt ? props.doneAt: props.estimaAt
 
         const formatDate = moment(date).format('ddd D [de] MMMM ')
+        
+        const getRightContent = () =>{
+            return(
+                <TouchableOpacity style={style.right}>
+                    <Icon  name="trash" size={30} color='#FFF' />
+                </TouchableOpacity>
+            )
+        }
 
     return (
+        <Swipeable 
+        renderRightActions={getRightContent}>
         <View style={style.container}>
             <TouchableWithoutFeedback
             onPress={() => props.toggleTask(props.id)}
@@ -30,6 +41,7 @@ export default props => {
             </View>
             
         </View>
+        </Swipeable>
     )
 }
 
@@ -86,6 +98,14 @@ const style = StyleSheet.create({
         fontFamily: commonsStyles.fontFamily,
         color: commonsStyles.colors.subText,
         fontSize: 16
+    },
+    right:{
+        backgroundColor:'red',
+        flexDirection:'row',
+        alignItems:'center',
+        justifyContent:'flex-end',
+        paddingHorizontal:20
+
     }
 
 })
