@@ -5,8 +5,11 @@ import Task from "../componentes/Task";
 import Icon from "react-native-vector-icons/FontAwesome";
 import TodayImage from '../../assets/imgs/today.jpg';
 import AddTasks from "./AddTask";
+//import { AsyncStorage } from 'react-native';
 import AsyncStorage from "@react-native-async-storage/async-storage";
-//import AsyncStorage from "@react-native-community/async-storage";
+// AsyncStorage from "@react-native-community/async-storage";
+//import { useAsyncStorage } from "@react-native-community/async-storage";
+
 
 import moment from 'moment'
 import 'moment/locale/pt-br'
@@ -29,7 +32,7 @@ export default class TaskList extends Component {
     componentDidMount = async () => {
         const stateString = await AsyncStorage.getItem('taskState')
         const state = JSON.parse(stateString) || inicialState
-        this.setState(state)
+        this.setState(state,this.filterTask)
     }
 
     toggleFilter = () => {
