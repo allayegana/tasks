@@ -1,39 +1,35 @@
 import React, { Component } from "react";
-import {Alert, View, Text, ImageBackground, StyleSheet, FlatList, TouchableOpacity, Platform } from "react-native";
+import { Alert, View, Text, ImageBackground, StyleSheet, FlatList, TouchableOpacity, Platform } from "react-native";
 import CommonsStyles from "../commonsStyles";
 import Task from "../componentes/Task";
 import Icon from "react-native-vector-icons/FontAwesome";
 import TodayImage from '../../assets/imgs/today.jpg';
 import AddTasks from "./AddTask";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+//import AsyncStorage from "@react-native-community/async-storage";
 
 import moment from 'moment'
 import 'moment/locale/pt-br'
 import commonsStyles from "../commonsStyles";
 
+const inicialState = {
+    showAddTasks: false,
+    showDoneTasks: true,
+    visivelTasks: [],
+    tasks: []
+}
+
+
 export default class TaskList extends Component {
 
     state = {
-        showAddTasks: false,
-        showDoneTasks: true,
-        visivelTasks: [],
-        tasks: [
-            {
-                id: Math.random(),
-                desc: "Comprar livro de react Native",
-                estimaAt: new Date(),
-                doneAt: new Date(),
-            },
-            {
-                id: Math.random(),
-                desc: "Ler livro de react Native",
-                estimaAt: new Date(),
-                doneAt: null,
-            },
-        ]
+        ...inicialState
     }
 
-    componentDidMount = () => {
-        this.filterTask()
+    componentDidMount = async () => {
+        const stateString = await AsyncStorage.getItem('taskState')
+        const state = JSON.parse(stateString) || inicialState
+        this.setState(state)
     }
 
     toggleFilter = () => {
@@ -61,23 +57,29 @@ export default class TaskList extends Component {
         }
 
         this.setState({ visivelTasks })
+        AsyncStorage.setItem('taskState', JSON.stringify(this.state))
     }
-    
 
-    AddTask = newTask =>{
-        if(!newTask.desc || !newTask.desc.trim()){
-         Alert.alert('Dados Invalidos', 'Descriçâo não Informada!')
-         return 
+
+    AddTask = newTask => {
+        if (!newTask.desc || !newTask.desc.trim()) {
+            Alert.alert('Dados Invalidos', 'Descriçâo não Informada!')
+            return
         }
 
         const tasks = [...this.state.tasks]
         tasks.push({
-          id: Math.random(),
-          desc: newTask.desc,
-          estimaAt: newTask.date,
-          doneAt:null
+            id: Math.random(),
+            desc: newTask.desc,
+            estimaAt: newTask.date,
+            doneAt: null
         })
-        this.setState({ tasks, showAddTasks:false}, this.filterTask)
+        this.setState({ tasks, showAddTasks: false }, this.filterTask)
+    }
+
+    deleteTask = id => {
+        const tasks = this.state.tasks.filter(task => task.id !== id)
+        this.setState({ tasks }, this.filterTask)
     }
 
 
@@ -89,8 +91,8 @@ export default class TaskList extends Component {
             <View style={style.container}>
                 <AddTasks
                     isVisible={this.state.showAddTasks}
-                    onCancel={() => this.setState({ showAddTasks: false })} 
-                    onSave={this.AddTask}/>
+                    onCancel={() => this.setState({ showAddTasks: false })}
+                    onSave={this.AddTask} />
                 <ImageBackground source={TodayImage}
                     style={style.background}>
 
@@ -113,14 +115,15 @@ export default class TaskList extends Component {
                         keyExtractor={item => `${item.id}`}
                         renderItem={({ item }) => <Task
                             {...item}
-                            toggleTask={this.toggleTask}
+                            onToggleTask={this.toggleTask}
+                            onDelete={this.deleteTask}
                         />}
                     />
                 </View>
                 <TouchableOpacity style={style.addButton}
                     activeOpacity={0.7}
                     onPress={() => this.setState({ showAddTasks: true })}
-                    >
+                >
                     <Icon name="plus" size={20}
                         color={commonsStyles.colors.secondary} />
                 </TouchableOpacity>
