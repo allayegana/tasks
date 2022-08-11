@@ -1,4 +1,4 @@
-import React from "react-native";
+import React from "react";
 import { createAppContainer, createSwitchNavigator } from "react-navigation";
 import { createDrawerNavigator } from "react-navigation-drawer";
 
@@ -6,11 +6,11 @@ import { createDrawerNavigator } from "react-navigation-drawer";
 import Auth from "./screens/Auth";
 import TaskList from "./screens/TaskList"
 
-const menuRoutes ={
+const menuRoutes = {
     Today:{
         name:'Today',
         screen: props => <TaskList title='Hoje' daysAhead={0} {...props} />,
-        navigationOptions:{
+        navigationOptions:{ 
             title:'Hoje'
         }
     },
