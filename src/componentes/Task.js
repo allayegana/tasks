@@ -14,7 +14,7 @@ export default props => {
 
     const doneNotStyle = props.doneAt != null ?
         { textDecorationLine: 'line-through' } : {}
-    const date = props.doneAt ? props.doneAt : props.estimaAt
+    const date = props.doneAt ? props.doneAt : props.estimateAt
 
     const formatDate = moment(date).format('ddd D [de] MMMM ')
 
@@ -53,7 +53,7 @@ export default props => {
                         </View>
                     </TouchableWithoutFeedback>
                     <View>
-                        <Text style={[style.desc, doneNotStyle]}>{props.desc}</Text>
+                        <Text style={[style.desc, doneNotStyle]}>{props.descricao}</Text>
                         <Text style={style.date} >{formatDate}</Text>
                     </View>
 

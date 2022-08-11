@@ -14,7 +14,7 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import moment from "moment";
 
 
-const inicialState = { desc: '', date: new Date(), showDatePicker: false }
+const inicialState = { descricao: '', date: new Date(), showDatePicker: false }
 
 export default class AddTasks extends Component {
 
@@ -24,7 +24,7 @@ export default class AddTasks extends Component {
 
     save = () => {
         const newTask = {
-            desc: this.state.desc,
+            descricao: this.state.descricao,
             date: this.state.date
         }
         this.props.onSave && this.props.onSave(newTask)
@@ -70,8 +70,8 @@ export default class AddTasks extends Component {
                     <Text style={style.header}>Nova Tarefa</Text>
                     <TextInput style={style.input}
                         placeholder=" Informe a Descricao ..."
-                        value={this.state.desc}
-                        onChangeText={desc => this.setState({ desc })}
+                        value={this.state.descricao}
+                        onChangeText={descricao => this.setState({ descricao })}
                     />
                     {this.getDatePicker()}
                     <View style={style.buttons}>

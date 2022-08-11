@@ -5,12 +5,11 @@ import Task from "../componentes/Task";
 import Icon from "react-native-vector-icons/FontAwesome";
 import TodayImage from '../../assets/imgs/today.jpg';
 import AddTasks from "./AddTask";
-//import { AsyncStorage } from 'react-native';
 import AsyncStorage from "@react-native-async-storage/async-storage";
-// AsyncStorage from "@react-native-community/async-storage";
-//import { useAsyncStorage } from "@react-native-community/async-storage";
+import axios from "axios";
 
 
+import { server, showError,showSucesso } from "../commons";
 import moment from 'moment'
 import 'moment/locale/pt-br'
 import commonsStyles from "../commonsStyles";
@@ -19,7 +18,8 @@ const inicialState = {
     showAddTasks: false,
     showDoneTasks: true,
     visivelTasks: [],
-    tasks: []
+    tasks: [],
+
 }
 
 
@@ -31,23 +31,34 @@ export default class TaskList extends Component {
 
     componentDidMount = async () => {
         const stateString = await AsyncStorage.getItem('taskState')
-        const state = JSON.parse(stateString) || inicialState
-        this.setState(state,this.filterTask)
+        const salvarState = JSON.parse(stateString) || inicialState
+        this.setState({
+            showDoneTasks: salvarState.showDoneTasks
+        },this.filterTask)
+        this.loadTasks()
     }
 
     toggleFilter = () => {
         this.setState({ showDoneTasks: !this.state.showDoneTasks }, this.filterTask)
     }
 
-    toggleTask = taskId => {
-        const tasks = [...this.state.tasks]
-        tasks.forEach(task => {
-            if (task.id === taskId) {
-                task.doneAt = task.doneAt ? null : new Date()
-            }
-        })
+    loadTasks= async () =>{
+        try{
+           const maxDate = moment().format('YYYY-MM-DD 23:59:59')
+           const res = await axios.get(`${server}/tasks/get-all?date${maxDate}`)
+           this.setState({ tasks: res.data}, this.filterTask)
+        }catch(e){
+          showError(e)
+        }
+    }
 
-        this.setState({ tasks }, this.filterTask)
+    toggleTask = async taskId => {
+       try{
+          await axios.put(`${server}/tasks/done/${taskId}`)
+          this.loadTasks()
+       }catch(e){
+        showError(e)
+       }
     }
 
     filterTask = () => {
@@ -58,31 +69,42 @@ export default class TaskList extends Component {
             const pending = task => task.doneAt === null
             visivelTasks = this.state.tasks.filter(pending)
         }
-
+    
         this.setState({ visivelTasks })
-        AsyncStorage.setItem('taskState', JSON.stringify(this.state))
+        AsyncStorage.setItem('taskState', JSON.stringify({
+            showDoneTasks: this.state.showDoneTasks
+        }))
+
+        // console.warn(visivelTasks);
     }
+   
 
 
-    AddTask = newTask => {
-        if (!newTask.desc || !newTask.desc.trim()) {
+    AddTask = async newTask => {
+        if (!newTask.descricao || !newTask.descricao.trim()) {
             Alert.alert('Dados Invalidos', 'Descriçâo não Informada!')
             return
         }
+        try{
+            await axios.post(`${server}/tasks/cadastro`,{
+                descricao:newTask.descricao,
+                estimateAt:newTask.date
+            })
+          this.setState({ showAddTasks: false }, this.loadTasks)
 
-        const tasks = [...this.state.tasks]
-        tasks.push({
-            id: Math.random(),
-            desc: newTask.desc,
-            estimaAt: newTask.date,
-            doneAt: null
-        })
-        this.setState({ tasks, showAddTasks: false }, this.filterTask)
+        }catch(e){
+          showError(e)
+        }
+ 
     }
 
-    deleteTask = id => {
-        const tasks = this.state.tasks.filter(task => task.id !== id)
-        this.setState({ tasks }, this.filterTask)
+    deleteTask = async taskId => {
+        try{
+           await axios.delete(`${server}/tasks/deletar/${taskId}`)
+           this.loadTasks()
+        }catch(e){
+          showError(e)
+        }
     }
 
 
@@ -121,6 +143,7 @@ export default class TaskList extends Component {
                             onToggleTask={this.toggleTask}
                             onDelete={this.deleteTask}
                         />}
+                        
                     />
                 </View>
                 <TouchableOpacity style={style.addButton}
