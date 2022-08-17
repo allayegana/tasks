@@ -7,10 +7,12 @@ import Icon from "react-native-vector-icons/FontAwesome";
 import { server,showError,showSucesso} from "../commons"
 import axios from "axios";
 
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 const inicialState ={
     nome: '',
-    email: 'allaye.gana@gmail.com',
-    password: 'Gana@123',
+    email: '',
+    password: '',
     comfirmPassword: '',
     stageNew: false
 }
@@ -47,13 +49,14 @@ export default class Auth extends Component {
 
     signin = async () =>{
         try{
-            await axios.post(`${server}/signup/sign/validar`,{
+          const res =   await axios.post(`${server}/signup/sign/validar`,{
                 email:this.state.email,
                 password:this.state.password
             })
-            this.props.navigation.navigate('Home')
-        }catch(e){
-            showError(e)
+            AsyncStorage.setItem('useData',JSON.stringify(res.data))
+            this.props.navigation.navigate('Home',res.data)
+        }catch(err){
+            showError(err)
         }
     }
 
